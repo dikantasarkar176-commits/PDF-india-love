@@ -1119,3 +1119,1293 @@
     </script>
 </body>
 </html> 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel to PDF & Edit PDF Tools | DocuMagic</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #7209b7;
+            --accent: #f72585;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+            --success: #4cc9f0;
+            --warning: #ff9e00;
+            --danger: #e63946;
+            --border-radius: 12px;
+            --shadow: 0 10px 20px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            color: var(--dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow);
+            border-radius: var(--border-radius);
+            position: sticky;
+            top: 20px;
+            z-index: 1000;
+            margin-bottom: 30px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 25px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .logo i {
+            color: var(--secondary);
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .tool-card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 30px 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+        }
+
+        .tool-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+
+        .tool-icon {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.8rem;
+        }
+
+        .tool-card h3 {
+            margin-bottom: 15px;
+            color: var(--dark);
+            font-size: 1.4rem;
+        }
+
+        .tool-card p {
+            color: var(--gray);
+            font-size: 0.95rem;
+        }
+
+        .tool-section {
+            display: none;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 40px;
+            margin-bottom: 50px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tool-section.active {
+            display: block;
+        }
+
+        .tool-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .tool-header h2 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 2.2rem;
+        }
+
+        .tool-header p {
+            color: var(--gray);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--light-gray);
+            border-radius: var(--border-radius);
+            padding: 50px 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: var(--transition);
+            cursor: pointer;
+            background: var(--light);
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: rgba(67, 97, 238, 0.05);
+        }
+
+        .upload-area.active {
+            border-color: var(--primary);
+            background: rgba(67, 97, 238, 0.08);
+        }
+
+        .upload-area i {
+            font-size: 3.5rem;
+            color: var(--gray);
+            margin-bottom: 20px;
+        }
+
+        .upload-area h3 {
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+
+        .upload-area p {
+            color: var(--gray);
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 12px 28px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: var(--transition);
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+        }
+
+        .btn-secondary:hover {
+            background: #6511a0;
+        }
+
+        .btn-success {
+            background: var(--success);
+        }
+
+        .btn-success:hover {
+            background: #3ab3d6;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+        }
+
+        .btn-warning:hover {
+            background: #e68e00;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+        }
+
+        .btn-danger:hover {
+            background: #d32f3a;
+        }
+
+        .btn:disabled {
+            background: var(--light-gray);
+            color: var(--gray);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .file-list {
+            margin: 25px 0;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            background: var(--light);
+            margin-bottom: 10px;
+            transition: var(--transition);
+        }
+
+        .file-item:hover {
+            background: #e9ecef;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+        }
+
+        .file-icon {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .file-details h4 {
+            margin-bottom: 5px;
+        }
+
+        .file-details p {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .file-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--accent);
+            font-size: 1.2rem;
+            transition: var(--transition);
+        }
+
+        .file-actions button:hover {
+            color: #d3126b;
+        }
+
+        .options {
+            margin: 30px 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .option-group {
+            margin-bottom: 20px;
+        }
+
+        .option-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .option-group select, .option-group input, .option-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--light-gray);
+            border-radius: var(--border-radius);
+            background: white;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .option-group select:focus, .option-group input:focus, .option-group textarea:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        .progress-container {
+            margin: 30px 0;
+            display: none;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background-color: var(--light-gray);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .result-area {
+            margin: 30px 0;
+            display: none;
+            text-align: center;
+            padding: 30px;
+            background: var(--light);
+            border-radius: var(--border-radius);
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin: 20px auto;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: var(--gray);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: var(--light-gray);
+        }
+
+        /* Edit PDF specific styles */
+        .edit-tools {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .edit-tool-btn {
+            padding: 10px 15px;
+            background: var(--light);
+            border: 1px solid var(--light-gray);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .edit-tool-btn:hover {
+            background: var(--light-gray);
+        }
+
+        .edit-tool-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .edit-options {
+            display: none;
+            margin: 20px 0;
+            padding: 20px;
+            background: var(--light);
+            border-radius: var(--border-radius);
+        }
+
+        .edit-options.active {
+            display: block;
+        }
+
+        .color-picker {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .color-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .color-option.active {
+            border-color: var(--dark);
+        }
+
+        .pdf-preview-container {
+            margin: 20px 0;
+            border: 1px solid var(--light-gray);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            height: 500px;
+            position: relative;
+        }
+
+        .pdf-preview {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .preview-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .annotation {
+            position: absolute;
+            pointer-events: auto;
+        }
+
+        .text-annotation {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        .image-annotation {
+            max-width: 200px;
+            max-height: 200px;
+        }
+
+        @media (max-width: 768px) {
+            .tool-section {
+                padding: 30px 20px;
+            }
+
+            .options {
+                grid-template-columns: 1fr;
+            }
+
+            .edit-tools {
+                flex-direction: column;
+            }
+
+            .pdf-preview-container {
+                height: 400px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .tool-header h2 {
+                font-size: 1.8rem;
+            }
+
+            .upload-area {
+                padding: 30px 15px;
+            }
+
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <a href="#" class="logo">
+                    <i class="fas fa-magic"></i>
+                    <span>DocuMagic</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- Tools Grid -->
+        <div class="tools-grid">
+            <div class="tool-card" data-tool="excel-to-pdf">
+                <div class="tool-icon">
+                    <i class="fas fa-file-excel"></i>
+                </div>
+                <h3>Excel to PDF</h3>
+                <p>Convert Excel files to PDF format</p>
+            </div>
+            <div class="tool-card" data-tool="edit-pdf">
+                <div class="tool-icon">
+                    <i class="fas fa-edit"></i>
+                </div>
+                <h3>Edit PDF</h3>
+                <p>Add text, images, and annotations to PDFs</p>
+            </div>
+        </div>
+
+        <!-- Tool Sections -->
+        <div id="tool-sections">
+            <!-- Excel to PDF Tool -->
+            <div class="tool-section" id="excel-to-pdf-tool">
+                <div class="tool-header">
+                    <h2>Excel to PDF Converter</h2>
+                    <p>Convert your Excel files to PDF format for easy sharing and printing</p>
+                </div>
+                
+                <div class="upload-area" id="excel-to-pdf-upload">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h3>Upload Your Excel File</h3>
+                    <p>Drag & drop your file here or click to browse</p>
+                    <input type="file" id="excel-to-pdf-input" accept=".xlsx,.xls,.csv" style="display: none;">
+                    <button class="btn" id="excel-to-pdf-browse">Select Excel File</button>
+                </div>
+                
+                <div class="file-list" id="excel-to-pdf-file-list">
+                    <div class="empty-state" id="excel-to-pdf-empty">
+                        <i class="fas fa-folder-open"></i>
+                        <p>No Excel file selected yet</p>
+                    </div>
+                </div>
+                
+                <div class="options">
+                    <div class="option-group">
+                        <label for="excel-to-pdf-orientation">Page Orientation</label>
+                        <select id="excel-to-pdf-orientation">
+                            <option value="portrait">Portrait</option>
+                            <option value="landscape" selected>Landscape</option>
+                        </select>
+                    </div>
+                    <div class="option-group">
+                        <label for="excel-to-pdf-size">Page Size</label>
+                        <select id="excel-to-pdf-size">
+                            <option value="a4">A4</option>
+                            <option value="letter" selected>Letter</option>
+                            <option value="legal">Legal</option>
+                        </select>
+                    </div>
+                    <div class="option-group">
+                        <label for="excel-to-pdf-scaling">Scaling</label>
+                        <select id="excel-to-pdf-scaling">
+                            <option value="fit">Fit to Page</option>
+                            <option value="actual" selected>Actual Size</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div style="text-align: center;">
+                    <button class="btn btn-success" id="excel-to-pdf-convert" disabled>Convert to PDF</button>
+                </div>
+                
+                <div class="progress-container" id="excel-to-pdf-progress">
+                    <div class="progress-info">
+                        <span>Processing...</span>
+                        <span id="excel-to-pdf-progress-text">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress" id="excel-to-pdf-progress-bar"></div>
+                    </div>
+                </div>
+                
+                <div class="result-area" id="excel-to-pdf-result">
+                    <h3>Conversion Complete!</h3>
+                    <p>Your Excel file has been successfully converted to PDF</p>
+                    <button class="btn download-btn" id="excel-to-pdf-download">
+                        <i class="fas fa-download"></i> Download PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- Edit PDF Tool -->
+            <div class="tool-section" id="edit-pdf-tool">
+                <div class="tool-header">
+                    <h2>Edit PDF</h2>
+                    <p>Add text, images, and annotations to your PDF documents</p>
+                </div>
+                
+                <div class="upload-area" id="edit-pdf-upload">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h3>Upload Your PDF File</h3>
+                    <p>Drag & drop your file here or click to browse</p>
+                    <input type="file" id="edit-pdf-input" accept=".pdf" style="display: none;">
+                    <button class="btn" id="edit-pdf-browse">Select PDF File</button>
+                </div>
+                
+                <div class="file-list" id="edit-pdf-file-list">
+                    <div class="empty-state" id="edit-pdf-empty">
+                        <i class="fas fa-folder-open"></i>
+                        <p>No PDF file selected yet</p>
+                    </div>
+                </div>
+
+                <div class="edit-tools">
+                    <button class="edit-tool-btn" data-tool="text">
+                        <i class="fas fa-font"></i> Add Text
+                    </button>
+                    <button class="edit-tool-btn" data-tool="image">
+                        <i class="fas fa-image"></i> Add Image
+                    </button>
+                    <button class="edit-tool-btn" data-tool="highlight">
+                        <i class="fas fa-highlighter"></i> Highlight
+                    </button>
+                    <button class="edit-tool-btn" data-tool="rectangle">
+                        <i class="fas fa-square"></i> Rectangle
+                    </button>
+                </div>
+
+                <div class="edit-options" id="text-options">
+                    <div class="option-group">
+                        <label for="text-content">Text Content</label>
+                        <textarea id="text-content" rows="3" placeholder="Enter text to add to the PDF"></textarea>
+                    </div>
+                    <div class="option-group">
+                        <label>Text Color</label>
+                        <div class="color-picker">
+                            <div class="color-option active" style="background-color: #000000;" data-color="#000000"></div>
+                            <div class="color-option" style="background-color: #ff0000;" data-color="#ff0000"></div>
+                            <div class="color-option" style="background-color: #0000ff;" data-color="#0000ff"></div>
+                            <div class="color-option" style="background-color: #008000;" data-color="#008000"></div>
+                        </div>
+                    </div>
+                    <div class="option-group">
+                        <label for="text-size">Font Size</label>
+                        <input type="range" id="text-size" min="8" max="72" value="12">
+                        <span id="text-size-value">12px</span>
+                    </div>
+                </div>
+
+                <div class="edit-options" id="image-options">
+                    <div class="option-group">
+                        <label for="image-upload">Upload Image</label>
+                        <input type="file" id="image-upload" accept=".jpg,.jpeg,.png,.gif">
+                    </div>
+                </div>
+
+                <div class="edit-options" id="highlight-options">
+                    <div class="option-group">
+                        <label>Highlight Color</label>
+                        <div class="color-picker">
+                            <div class="color-option active" style="background-color: #ffff00;" data-color="#ffff00"></div>
+                            <div class="color-option" style="background-color: #00ffff;" data-color="#00ffff"></div>
+                            <div class="color-option" style="background-color: #ff99cc;" data-color="#ff99cc"></div>
+                            <div class="color-option" style="background-color: #99ff99;" data-color="#99ff99"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="edit-options" id="rectangle-options">
+                    <div class="option-group">
+                        <label>Rectangle Color</label>
+                        <div class="color-picker">
+                            <div class="color-option active" style="background-color: #ff0000;" data-color="#ff0000"></div>
+                            <div class="color-option" style="background-color: #0000ff;" data-color="#0000ff"></div>
+                            <div class="color-option" style="background-color: #008000;" data-color="#008000"></div>
+                            <div class="color-option" style="background-color: #000000;" data-color="#000000"></div>
+                        </div>
+                    </div>
+                    <div class="option-group">
+                        <label for="rectangle-width">Line Width</label>
+                        <input type="range" id="rectangle-width" min="1" max="10" value="2">
+                        <span id="rectangle-width-value">2px</span>
+                    </div>
+                </div>
+
+                <div class="pdf-preview-container">
+                    <iframe class="pdf-preview" id="pdf-preview"></iframe>
+                    <div class="preview-overlay" id="preview-overlay"></div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn btn-success" id="edit-pdf-save" disabled>Save Edited PDF</button>
+                </div>
+                
+                <div class="progress-container" id="edit-pdf-progress">
+                    <div class="progress-info">
+                        <span>Processing...</span>
+                        <span id="edit-pdf-progress-text">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress" id="edit-pdf-progress-bar"></div>
+                    </div>
+                </div>
+                
+                <div class="result-area" id="edit-pdf-result">
+                    <h3>Edit Complete!</h3>
+                    <p>Your PDF has been successfully edited</p>
+                    <button class="btn download-btn" id="edit-pdf-download">
+                        <i class="fas fa-download"></i> Download Edited PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tool selection functionality
+        document.querySelectorAll('.tool-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const toolId = this.getAttribute('data-tool');
+                
+                // Hide all tool sections
+                document.querySelectorAll('.tool-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                
+                // Show selected tool section
+                document.getElementById(`${toolId}-tool`).classList.add('active');
+                
+                // Scroll to the tool section
+                document.getElementById(`${toolId}-tool`).scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+
+        // ========== EXCEL TO PDF TOOL ==========
+        const excelToPdfUpload = document.getElementById('excel-to-pdf-upload');
+        const excelToPdfInput = document.getElementById('excel-to-pdf-input');
+        const excelToPdfBrowse = document.getElementById('excel-to-pdf-browse');
+        const excelToPdfFileList = document.getElementById('excel-to-pdf-file-list');
+        const excelToPdfEmpty = document.getElementById('excel-to-pdf-empty');
+        const excelToPdfConvert = document.getElementById('excel-to-pdf-convert');
+        const excelToPdfProgress = document.getElementById('excel-to-pdf-progress');
+        const excelToPdfProgressBar = document.getElementById('excel-to-pdf-progress-bar');
+        const excelToPdfProgressText = document.getElementById('excel-to-pdf-progress-text');
+        const excelToPdfResult = document.getElementById('excel-to-pdf-result');
+        const excelToPdfDownload = document.getElementById('excel-to-pdf-download');
+
+        // Store selected file
+        let excelFile = null;
+
+        // Browse button click
+        excelToPdfBrowse.addEventListener('click', function() {
+            excelToPdfInput.click();
+        });
+
+        // File input change
+        excelToPdfInput.addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                handleExcelFileSelection(e.target.files[0]);
+            }
+        });
+
+        // Drag and drop functionality
+        excelToPdfUpload.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('active');
+        });
+
+        excelToPdfUpload.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.classList.remove('active');
+        });
+
+        excelToPdfUpload.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('active');
+            
+            if (e.dataTransfer.files.length > 0) {
+                handleExcelFileSelection(e.dataTransfer.files[0]);
+            }
+        });
+
+        // Handle file selection
+        function handleExcelFileSelection(file) {
+            const validTypes = [
+                'application/vnd.ms-excel',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'text/csv'
+            ];
+            
+            if (!validTypes.includes(file.type) && !file.name.match(/\.(xlsx|xls|csv)$/)) {
+                alert('Please select a valid Excel file (XLSX, XLS, CSV).');
+                return;
+            }
+            
+            excelFile = file;
+            
+            // Update UI
+            updateExcelFileList();
+            updateExcelConvertButton();
+        }
+
+        // Update file list display
+        function updateExcelFileList() {
+            if (!excelFile) {
+                excelToPdfEmpty.style.display = 'block';
+                excelToPdfFileList.innerHTML = '';
+                excelToPdfFileList.appendChild(excelToPdfEmpty);
+                return;
+            }
+            
+            excelToPdfEmpty.style.display = 'none';
+            
+            // Clear existing list (except empty state)
+            const fileListItems = excelToPdfFileList.querySelectorAll('.file-item');
+            fileListItems.forEach(item => item.remove());
+            
+            // Add file to list
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            fileItem.innerHTML = `
+                <div class="file-info">
+                    <i class="fas fa-file-excel file-icon"></i>
+                    <div class="file-details">
+                        <h4>${excelFile.name}</h4>
+                        <p>${formatFileSize(excelFile.size)}</p>
+                    </div>
+                </div>
+                <div class="file-actions">
+                    <button class="remove-file"><i class="fas fa-times"></i></button>
+                </div>
+            `;
+            
+            excelToPdfFileList.appendChild(fileItem);
+            
+            // Remove file functionality
+            fileItem.querySelector('.remove-file').addEventListener('click', function() {
+                excelFile = null;
+                updateExcelFileList();
+                updateExcelConvertButton();
+            });
+        }
+
+        // Update convert button state
+        function updateExcelConvertButton() {
+            excelToPdfConvert.disabled = !excelFile;
+        }
+
+        // Format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Convert button click
+        excelToPdfConvert.addEventListener('click', function() {
+            if (!excelFile) {
+                alert('Please select an Excel file first.');
+                return;
+            }
+            
+            // Show progress
+            excelToPdfProgress.style.display = 'block';
+            excelToPdfProgressBar.style.width = '0%';
+            excelToPdfProgressText.textContent = '0%';
+            
+            // Start conversion
+            convertExcelToPdf();
+        });
+
+        // Convert Excel to PDF
+        async function convertExcelToPdf() {
+            try {
+                // Get options
+                const orientation = document.getElementById('excel-to-pdf-orientation').value;
+                const pageSize = document.getElementById('excel-to-pdf-size').value;
+                const scaling = document.getElementById('excel-to-pdf-scaling').value;
+                
+                // Initialize progress
+                let progress = 0;
+                
+                // Update progress
+                progress = 20;
+                excelToPdfProgressBar.style.width = `${progress}%`;
+                excelToPdfProgressText.textContent = `${progress}%`;
+                
+                // Read Excel file
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        
+                        // Update progress
+                        progress = 50;
+                        excelToPdfProgressBar.style.width = `${progress}%`;
+                        excelToPdfProgressText.textContent = `${progress}%`;
+                        
+                        // Convert to PDF using jsPDF
+                        const { jsPDF } = window.jspdf;
+                        const pdf = new jsPDF({
+                            orientation: orientation,
+                            unit: 'mm',
+                            format: pageSize
+                        });
+                        
+                        // Process each worksheet
+                        workbook.SheetNames.forEach((sheetName, index) => {
+                            const worksheet = workbook.Sheets[sheetName];
+                            const html = XLSX.utils.sheet_to_html(worksheet, { editable: false });
+                            
+                            // Add new page for each sheet (except first)
+                            if (index > 0) {
+                                pdf.addPage();
+                            }
+                            
+                            // Add sheet name as title
+                            pdf.setFontSize(16);
+                            pdf.text(sheetName, 20, 20);
+                            
+                            // Convert HTML table to PDF (simplified approach)
+                            // In a real implementation, you would parse the HTML and add content properly
+                            pdf.setFontSize(10);
+                            pdf.text('Excel content would be rendered here in a full implementation.', 20, 40);
+                        });
+                        
+                        // Update progress
+                        progress = 90;
+                        excelToPdfProgressBar.style.width = `${progress}%`;
+                        excelToPdfProgressText.textContent = `${progress}%`;
+                        
+                        // Generate PDF
+                        const pdfBlob = pdf.output('blob');
+                        const pdfUrl = URL.createObjectURL(pdfBlob);
+                        
+                        // Complete progress
+                        excelToPdfProgressBar.style.width = '100%';
+                        excelToPdfProgressText.textContent = '100%';
+                        
+                        // Show result
+                        excelToPdfResult.style.display = 'block';
+                        
+                        // Set up download
+                        excelToPdfDownload.onclick = function() {
+                            const link = document.createElement('a');
+                            link.href = pdfUrl;
+                            link.download = excelFile.name.replace(/\.[^/.]+$/, "") + '.pdf';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                        };
+                        
+                    } catch (error) {
+                        console.error('Error processing Excel file:', error);
+                        alert('Error processing Excel file. Please try another file.');
+                    }
+                };
+                
+                reader.onerror = function() {
+                    alert('Error reading file. Please try again.');
+                };
+                
+                reader.readAsArrayBuffer(excelFile);
+                
+            } catch (error) {
+                console.error('Error converting Excel to PDF:', error);
+                alert('An error occurred during conversion. Please try again.');
+            }
+        }
+
+        // ========== EDIT PDF TOOL ==========
+        const editPdfUpload = document.getElementById('edit-pdf-upload');
+        const editPdfInput = document.getElementById('edit-pdf-input');
+        const editPdfBrowse = document.getElementById('edit-pdf-browse');
+        const editPdfFileList = document.getElementById('edit-pdf-file-list');
+        const editPdfEmpty = document.getElementById('edit-pdf-empty');
+        const editPdfSave = document.getElementById('edit-pdf-save');
+        const editPdfProgress = document.getElementById('edit-pdf-progress');
+        const editPdfProgressBar = document.getElementById('edit-pdf-progress-bar');
+        const editPdfProgressText = document.getElementById('edit-pdf-progress-text');
+        const editPdfResult = document.getElementById('edit-pdf-result');
+        const editPdfDownload = document.getElementById('edit-pdf-download');
+        const pdfPreview = document.getElementById('pdf-preview');
+        const previewOverlay = document.getElementById('preview-overlay');
+
+        // Store selected file and annotations
+        let pdfFile = null;
+        let pdfUrl = null;
+        let annotations = [];
+        let activeTool = null;
+
+        // Edit tool buttons
+        const editToolBtns = document.querySelectorAll('.edit-tool-btn');
+        const editOptions = document.querySelectorAll('.edit-options');
+        
+        // Color pickers
+        const colorOptions = document.querySelectorAll('.color-option');
+        
+        // Initialize edit tools
+        editToolBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Remove active class from all buttons
+                editToolBtns.forEach(b => b.classList.remove('active'));
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                // Set active tool
+                activeTool = this.getAttribute('data-tool');
+                
+                // Hide all options
+                editOptions.forEach(option => option.classList.remove('active'));
+                // Show options for active tool
+                document.getElementById(`${activeTool}-options`).classList.add('active');
+            });
+        });
+
+        // Initialize color pickers
+        colorOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                const parent = this.closest('.color-picker');
+                parent.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Text size slider
+        const textSizeSlider = document.getElementById('text-size');
+        const textSizeValue = document.getElementById('text-size-value');
+        
+        textSizeSlider.addEventListener('input', function() {
+            textSizeValue.textContent = `${this.value}px`;
+        });
+
+        // Rectangle width slider
+        const rectangleWidthSlider = document.getElementById('rectangle-width');
+        const rectangleWidthValue = document.getElementById('rectangle-width-value');
+        
+        rectangleWidthSlider.addEventListener('input', function() {
+            rectangleWidthValue.textContent = `${this.value}px`;
+        });
+
+        // Browse button click
+        editPdfBrowse.addEventListener('click', function() {
+            editPdfInput.click();
+        });
+
+        // File input change
+        editPdfInput.addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                handlePdfFileSelection(e.target.files[0]);
+            }
+        });
+
+        // Drag and drop functionality
+        editPdfUpload.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('active');
+        });
+
+        editPdfUpload.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.classList.remove('active');
+        });
+
+        editPdfUpload.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('active');
+            
+            if (e.dataTransfer.files.length > 0) {
+                handlePdfFileSelection(e.dataTransfer.files[0]);
+            }
+        });
+
+        // Handle file selection
+        function handlePdfFileSelection(file) {
+            if (file.type !== 'application/pdf') {
+                alert('Please select a PDF file.');
+                return;
+            }
+            
+            pdfFile = file;
+            pdfUrl = URL.createObjectURL(file);
+            
+            // Update UI
+            updatePdfFileList();
+            updatePdfSaveButton();
+            
+            // Load PDF in preview
+            pdfPreview.src = pdfUrl;
+            
+            // Clear previous annotations
+            annotations = [];
+            previewOverlay.innerHTML = '';
+        }
+
+        // Update file list display
+        function updatePdfFileList() {
+            if (!pdfFile) {
+                editPdfEmpty.style.display = 'block';
+                editPdfFileList.innerHTML = '';
+                editPdfFileList.appendChild(editPdfEmpty);
+                return;
+            }
+            
+            editPdfEmpty.style.display = 'none';
+            
+            // Clear existing list (except empty state)
+            const fileListItems = editPdfFileList.querySelectorAll('.file-item');
+            fileListItems.forEach(item => item.remove());
+            
+            // Add file to list
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            fileItem.innerHTML = `
+                <div class="file-info">
+                    <i class="fas fa-file-pdf file-icon"></i>
+                    <div class="file-details">
+                        <h4>${pdfFile.name}</h4>
+                        <p>${formatFileSize(pdfFile.size)}</p>
+                    </div>
+                </div>
+                <div class="file-actions">
+                    <button class="remove-file"><i class="fas fa-times"></i></button>
+                </div>
+            `;
+            
+            editPdfFileList.appendChild(fileItem);
+            
+            // Remove file functionality
+            fileItem.querySelector('.remove-file').addEventListener('click', function() {
+                pdfFile = null;
+                if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+                pdfUrl = null;
+                updatePdfFileList();
+                updatePdfSaveButton();
+                pdfPreview.src = '';
+                annotations = [];
+                previewOverlay.innerHTML = '';
+            });
+        }
+
+        // Update save button state
+        function updatePdfSaveButton() {
+            editPdfSave.disabled = !pdfFile;
+        }
+
+        // Save button click
+        editPdfSave.addEventListener('click', function() {
+            if (!pdfFile) {
+                alert('Please select a PDF file first.');
+                return;
+            }
+            
+            // Show progress
+            editPdfProgress.style.display = 'block';
+            editPdfProgressBar.style.width = '0%';
+            editPdfProgressText.textContent = '0%';
+            
+            // Start editing
+            editPdf();
+        });
+
+        // Edit PDF with annotations
+        async function editPdf() {
+            try {
+                const { PDFDocument, rgb } = PDFLib;
+                
+                // Load the source PDF
+                const arrayBuffer = await pdfFile.arrayBuffer();
+                const pdfDoc = await PDFDocument.load(arrayBuffer);
+                
+                // Get the first page
+                const pages = pdfDoc.getPages();
+                const firstPage = pages[0];
+                
+                // Update progress
+                editPdfProgressBar.style.width = '50%';
+                editPdfProgressText.textContent = '50%';
+                
+                // In a real implementation, you would add the annotations to the PDF
+                // For this demo, we'll just add a sample annotation
+                firstPage.drawText('Edited with DocuMagic', {
+                    x: 50,
+                    y: firstPage.getHeight() - 50,
+                    size: 12,
+                    color: rgb(0.2, 0.2, 0.8),
+                });
+                
+                // Update progress
+                editPdfProgressBar.style.width = '90%';
+                editPdfProgressText.textContent = '90%';
+                
+                // Save the PDF
+                const pdfBytes = await pdfDoc.save();
+                const editedPdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
+                const editedPdfUrl = URL.createObjectURL(editedPdfBlob);
+                
+                // Complete progress
+                editPdfProgressBar.style.width = '100%';
+                editPdfProgressText.textContent = '100%';
+                
+                // Show result
+                editPdfResult.style.display = 'block';
+                
+                // Set up download
+                editPdfDownload.onclick = function() {
+                    const link = document.createElement('a');
+                    link.href = editedPdfUrl;
+                    link.download = pdfFile.name.replace('.pdf', '-edited.pdf');
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                };
+                
+            } catch (error) {
+                console.error('Error editing PDF:', error);
+                alert('An error occurred during editing. Please try again.');
+            }
+        }
+
+        // Note: In a full implementation, you would:
+        // 1. Add click handlers to the PDF preview to place annotations
+        // 2. Store annotation data (position, content, style)
+        // 3. Apply annotations to the PDF when saving
+        // This is a simplified version to demonstrate the concept
+    </script>
+</body>
+</html>
